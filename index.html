@@ -2,135 +2,175 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HTC Hero (G3) Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HTC Sense Simulator</title>
     <style>
-        :root { --htc-green: #8CC63F; --htc-red: #E3000F; }
+        :root { --htc-green: #8CC63F; --htc-red: #E3000F; --htc-dark: #111; }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body {
-            background-color: #000; display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden;
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%; background-color: #000; overflow: hidden;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
+        body { display: flex; justify-content: center; align-items: center; }
+
         /* 机身 */
         .htc-device {
-            width: 96vw; max-width: 400px; height: 95vh; 
+            width: 100%; max-width: 420px; height: 100%; max-height: 900px;
             background: linear-gradient(180deg, #f0f0f0 0%, #d0d0d0 30%, #a0a0a0 100%);
-            border-radius: 20px 20px 60px 60px;
-            padding: 10px; display: flex; flex-direction: column;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.8);
-            position: relative; border: 2px solid #bbb;
+            border-radius: 20px 20px 50px 50px;
+            display: flex; flex-direction: column; position: relative;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.8);
+            border: 2px solid #bbb;
         }
-        .top-bezel { text-align: center; padding-bottom: 5px; flex-shrink: 0; }
+
+        .top-bezel { text-align: center; padding: 10px 0 5px 0; flex-shrink: 0; }
         .speaker { width: 60px; height: 5px; background: #333; margin: 0 auto; border-radius: 3px; }
         .htc-logo { color: #555; font-size: 10px; font-weight: bold; letter-spacing: 3px; margin-top: 3px; }
 
-        /* 屏幕 */
+        /* 屏幕区域 */
         .screen-container {
-            width: 100%; flex-grow: 1; background: #000; border: 2px solid #222;
-            border-radius: 4px; position: relative; overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8); margin-bottom: 10px;
+            flex-grow: 1; width: 100%; background: #000; border-top: 2px solid #222; border-bottom: 2px solid #222;
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
         }
         .status-bar {
             background: #111; color: #aaa; font-size: 11px; padding: 4px 8px;
-            display: flex; justify-content: space-between; border-bottom: 1px solid #333; z-index: 10; flex-shrink: 0;
+            display: flex; justify-content: space-between; border-bottom: 1px solid #333; flex-shrink: 0; z-index: 100;
         }
         .screen-content { flex-grow: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* 桌面 */
+        /* ======== HTC Sense 桌面系统 ======== */
         .sense-home {
-            height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 30px;
-            background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%); overflow-y: auto;
+            height: 100%; width: 100%; position: relative; background: #000;
+            display: flex; flex-direction: column;
         }
-        .clock-widget { text-align: center; margin-bottom: 30px; color: #fff; }
-        .clock-time { font-size: 48px; font-weight: 300; line-height: 1; }
-        .clock-date { font-size: 13px; color: #aaa; margin-top: 5px; }
-        .weather-info { font-size: 12px; color: var(--htc-green); margin-top: 5px; }
 
+        /* 页面容器：支持左右滑动切换 */
+        .pages-wrapper {
+            flex-grow: 1; display: flex; overflow: hidden; position: relative;
+        }
+        .page {
+            min-width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 15px;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            background: radial-gradient(circle at center, #222 0%, #000 100%);
+        }
+
+        /* ---- 第一页：翻页时钟与天气 ---- */
+        .flip-clock-container { text-align: center; color: #fff; width: 100%; margin-bottom: 20px;}
+        
+        /* 模拟翻页时钟数字 */
+        .flip-clock {
+            display: inline-flex; background: #151515; border-radius: 8px; border: 1px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); overflow: hidden;
+        }
+        .flip-digit {
+            font-size: 55px; font-weight: 300; width: 60px; text-align: center; position: relative;
+            border-right: 1px solid #000; border-left: 1px solid #333;
+        }
+        .flip-digit:first-child { border-left: none; }
+        .flip-digit:last-child { border-right: none; }
+        .flip-digit::after {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #000; opacity: 0.5; z-index: 1;
+        }
+        /* 翻页动画 */
+        .flip-anim { animation: flip 0.4s ease-in-out; }
+        @keyframes flip {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .sense-date { font-size: 13px; color: #8CC63F; margin-top: 10px; }
+
+        /* 桌面上的天气小卡片 */
+        .home-weather-widget {
+            display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 10px; border: 1px solid #333; width: 80%; justify-content: space-between;
+        }
+        .weather-icon { font-size: 30px; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* ---- 第二页：应用图标 ---- */
         .app-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-            padding: 0 15px; width: 100%; justify-items: center;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            padding: 20px 15px; width: 100%; justify-items: center;
         }
         .app-icon {
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            padding: 8px; border-radius: 10px; border: 2px solid transparent; transition: all 0.15s;
+            padding: 6px; border-radius: 10px; border: 2px solid transparent; transition: all 0.15s;
         }
         .app-icon.active { background: rgba(140, 198, 63, 0.2); border-color: var(--htc-green); transform: scale(1.05); }
         .icon-img {
-            width: 48px; height: 48px; background: #333; border-radius: 12px; margin-bottom: 6px;
-            display: flex; justify-content: center; align-items: center; font-size: 24px; color: white;
+            width: 45px; height: 45px; background: #333; border-radius: 12px; margin-bottom: 6px;
+            display: flex; justify-content: center; align-items: center; font-size: 22px; color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
         .icon-text { color: #fff; font-size: 11px; text-shadow: 0 1px 2px #000; }
 
+        /* 底部弧形 Dock 栏 */
+        .htc-dock {
+            height: 70px; width: 100%; background: linear-gradient(180deg, #222, #000); position: absolute; bottom: 0;
+            border-top-left-radius: 30px; border-top-right-radius: 30px; border-top: 1px solid #444;
+            display: flex; justify-content: space-around; align-items: center; z-index: 10;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.8);
+        }
+        .dock-btn { color: #888; font-size: 24px; cursor: pointer; padding: 10px; }
+        .dock-btn:hover { color: #fff; }
+        .dock-btn.center { color: var(--htc-green); font-size: 30px; transform: translateY(-15px); background: #111; border-radius: 50%; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; border: 2px solid #333; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+
+        /* 页面指示器（小圆点） */
+        .page-indicator {
+            position: absolute; bottom: 80px; width: 100%; text-align: center; z-index: 10;
+        }
+        .dot { display: inline-block; width: 6px; height: 6px; background: #555; border-radius: 50%; margin: 0 3px; }
+        .dot.active { background: var(--htc-green); }
+
         /* App 界面 */
-        .app-view { display: none; flex-direction: column; height: 100%; width: 100%; background: #111; color: #fff; }
+        .app-view { display: none; flex-direction: column; height: 100%; width: 100%; background: #111; color: #fff; position: absolute; top: 0; left: 0; z-index: 200; }
         .app-view.active { display: flex; }
-        .app-header { background: linear-gradient(180deg, #333, #111); padding: 10px; font-size: 14px; font-weight: bold; text-align: center; border-bottom: 1px solid #444; color: var(--htc-green); flex-shrink: 0; }
+        .app-header { background: linear-gradient(180deg, #333, #111); padding: 8px; font-size: 14px; font-weight: bold; text-align: center; border-bottom: 1px solid #444; color: var(--htc-green); flex-shrink: 0; }
         
-        .app-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        /* --- 华丽的天气 App --- */
+        .weather-app-bg {
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%); flex-grow: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding-top: 40px;
+        }
+        /* 太阳/云朵动画 */
+        .sun-ani {
+            width: 100px; height: 100px; background: #FFD700; border-radius: 50%; box-shadow: 0 0 40px #FFD700;
+            animation: pulse 4s infinite alternate;
+        }
+        @keyframes pulse { from { transform: scale(1); box-shadow: 0 0 40px #FFD700; } to { transform: scale(1.1); box-shadow: 0 0 80px #FFA500; } }
+        .weather-temp { font-size: 64px; color: #fff; font-weight: 300; margin-top: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .weather-city { font-size: 20px; color: #fff; }
+        .weather-desc { font-size: 14px; color: #eee; margin-top: 5px; }
+        
+        /* 其他App基础样式 */
+        .app-list { flex-grow: 1; overflow-y: auto; padding: 10px; background: #111;}
         .list-item { padding: 10px; border-bottom: 1px solid #222; font-size: 13px; display: flex; flex-direction: column; }
         .list-item strong { color: var(--htc-green); font-size: 14px; margin-bottom: 4px; }
         .list-item span { color: #aaa; font-size: 12px; }
 
-        /* 信息界面输入区 */
-        .msg-input-area {
-            padding: 8px; background: #222; border-top: 1px solid #444; flex-shrink: 0; height: 40px; display: flex; align-items: center;
-        }
-        .msg-display {
-            width: 100%; background: #000; border: 1px solid #555; color: #fff; padding: 6px 8px; font-size: 13px;
-            min-height: 24px; border-radius: 4px; white-space: nowrap; overflow-x: auto; display: flex; align-items: center;
-        }
-        .cursor { display: inline-block; width: 2px; height: 14px; background: var(--htc-green); animation: blink 1s step-end infinite; margin: 0 1px; }
+        /* 信息界面与键盘 */
+        .msg-input-area { padding: 8px; background: #222; border-top: 1px solid #444; display: flex; align-items: center; }
+        .msg-display { width: 100%; background: #000; border: 1px solid #555; color: #fff; padding: 8px; font-size: 14px; min-height: 24px; border-radius: 4px; display: flex; align-items: center; }
+        .cursor { display: inline-block; width: 2px; height: 15px; background: var(--htc-green); animation: blink 1s step-end infinite; margin: 0 1px; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* ======== 核心：HTC 风格虚拟键盘 ======== */
-        .htc-keyboard {
-            background: #1a1a1a; padding: 5px; border-top: 2px solid #333; display: none; flex-direction: column; gap: 4px;
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.8); flex-shrink: 0;
-        }
-        .htc-keyboard.active { display: flex; }
-        .kb-row { display: flex; justify-content: center; gap: 3px; width: 100%; }
-        .kb-key {
-            flex: 1; height: 32px; background: linear-gradient(180deg, #444, #222); border-radius: 4px;
-            display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold;
-            color: #ddd; box-shadow: 0 2px 3px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2);
-            border: 1px solid #111; cursor: pointer; transition: all 0.1s;
-        }
-        .kb-key.special { flex: 1.5; font-size: 11px; color: #aaa; background: linear-gradient(180deg, #333, #111); }
+        .htc-keyboard { background: #1a1a1a; padding: 5px; border-top: 2px solid #333; display: flex; flex-direction: column; gap: 4px; height: 160px; flex-shrink: 0;}
+        .kb-row { display: flex; justify-content: center; gap: 3px; width: 100%; flex: 1;}
+        .kb-key { flex: 1; background: linear-gradient(180deg, #444, #222); border-radius: 4px; display: flex; justify-content: center; align-items: center; font-size: 15px; font-weight: bold; color: #ddd; box-shadow: 0 2px 3px rgba(0,0,0,0.8); border: 1px solid #111; cursor: pointer; }
+        .kb-key.special { flex: 1.5; font-size: 11px; color: #aaa; }
         .kb-key.space { flex: 5; }
-        
-        /* 键盘按键按下 */
-        .kb-key:active, .kb-key.pressed {
-            transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.8); background: #111;
-        }
-        /* 轨迹球选中的按键（HTC经典绿光） */
-        .kb-key.focused {
-            border-color: var(--htc-green); color: var(--htc-green);
-            box-shadow: 0 0 8px rgba(140, 198, 63, 0.6), inset 0 1px 0 rgba(255,255,255,0.2);
-            background: linear-gradient(180deg, #333, #111);
-        }
+        .kb-key.focused { border-color: var(--htc-green); color: var(--htc-green); box-shadow: 0 0 8px rgba(140, 198, 63, 0.6); background: #222; }
 
-        /* 底部导航键 */
-        .nav-row { display: flex; justify-content: space-around; align-items: center; padding: 5px 0; flex-shrink: 0; }
-        .nav-btn {
-            width: 50px; height: 26px; border-radius: 13px; display: flex; justify-content: center; align-items: center;
-            font-size: 11px; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
+        /* 物理键区 */
+        .nav-row { display: flex; justify-content: space-around; align-items: center; padding: 10px 0; flex-shrink: 0; }
+        .nav-btn { width: 50px; height: 28px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 12px; color: #fff; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.5); cursor: pointer; z-index: 99; }
         .btn-green { background: var(--htc-green); color: #000; }
         .btn-red { background: var(--htc-red); }
         .btn-black { background: #333; border: 1px solid #555; color: #ddd; }
 
-        /* 轨迹球 */
-        .trackball-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; padding-bottom: 15px; flex-shrink: 0; }
-        .trackball {
-            width: 50px; height: 50px; border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ff6666, #cc0000 60%, #660000 100%);
-            box-shadow: inset -3px -5px 10px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.5), 0 0 15px rgba(204,0,0,0.4);
-            cursor: pointer; border: 2px solid #551111; position: relative;
-        }
-        .trackball::after {
-            content: ''; position: absolute; top: 20%; left: 20%; width: 25%; height: 25%;
-            background: rgba(255,255,255,0.4); border-radius: 50%; filter: blur(1px);
-        }
+        .trackball-container { display: flex; flex-direction: column; align-items: center; padding-bottom: 15px; flex-shrink: 0; }
+        .trackball { width: 55px; height: 55px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff6666, #cc0000 60%, #660000 100%); box-shadow: inset -3px -5px 10px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.5); cursor: pointer; border: 2px solid #551111; }
         .trackball:active { transform: scale(0.95); }
     </style>
 </head>
@@ -143,26 +183,76 @@
         </div>
 
         <div class="screen-container">
-            <div class="status-bar">中国移动 <span id="clock-status">12:00</span></div>
+            <div class="status-bar">中国移动 <span id="clock-status">18:30</span></div>
             
             <div class="screen-content">
-                <!-- 桌面 -->
+                <!-- HTC Sense 桌面系统 -->
                 <div class="sense-home" id="sense-home">
-                    <div class="clock-widget">
-                        <div class="clock-time" id="main-clock">12:00</div>
-                        <div class="clock-date" id="main-date">1月1日 星期一</div>
-                        <div class="weather-info">☀️ 晴 22°C</div>
+                    <div class="pages-wrapper" id="pages-wrapper">
+                        <!-- 第一页：时钟与天气 -->
+                        <div class="page" id="page-0" style="transform: translateX(0%);">
+                            <div class="flip-clock-container">
+                                <div class="flip-clock" id="flip-clock">
+                                    <!-- 时钟数字由JS生成 -->
+                                </div>
+                                <div class="sense-date" id="main-date">11月17日 星期二</div>
+                            </div>
+                            <div class="home-weather-widget">
+                                <div>
+                                    <div style="font-size:18px; color:#fff;">上海</div>
+                                    <div style="font-size:12px; color:#aaa;">晴</div>
+                                </div>
+                                <div class="weather-icon">☀️</div>
+                                <div style="font-size:28px; color:#fff; font-weight:300;">22°</div>
+                            </div>
+                        </div>
+
+                        <!-- 第二页：应用图标 -->
+                        <div class="page" id="page-1" style="transform: translateX(0%);">
+                            <div class="app-grid" id="app-grid">
+                                <div class="app-icon active" onclick="openApp('messages')">
+                                    <div class="icon-img" style="background:#4CAF50;">💬</div><div class="icon-text">信息</div>
+                                </div>
+                                <div class="app-icon" onclick="openApp('mail')">
+                                    <div class="icon-img" style="background:#2196F3;">✉️</div><div class="icon-text">邮件</div>
+                                </div>
+                                <div class="app-icon" onclick="openApp('weather')">
+                                    <div class="icon-img" style="background:#FFC107;">☀️</div><div class="icon-text">天气</div>
+                                </div>
+                                <div class="app-icon" onclick="openApp('calendar')">
+                                    <div class="icon-img" style="background:#f44336;">📅</div><div class="icon-text">日历</div>
+                                </div>
+                                <div class="app-icon" onclick="openApp('camera')">
+                                    <div class="icon-img" style="background:#607d8b;">📷</div><div class="icon-text">相机</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="app-grid" id="app-grid">
-                        <div class="app-icon active" onclick="openApp('messages')">
-                            <div class="icon-img" style="background:#4CAF50;">💬</div><div class="icon-text">信息</div>
-                        </div>
-                        <div class="app-icon" onclick="openApp('mail')">
-                            <div class="icon-img" style="background:#2196F3;">✉️</div><div class="icon-text">邮件</div>
-                        </div>
-                        <div class="app-icon" onclick="openApp('camera')">
-                            <div class="icon-img" style="background:#607d8b;">📷</div><div class="icon-text">相机</div>
-                        </div>
+
+                    <!-- 页面指示器 -->
+                    <div class="page-indicator" id="page-indicator">
+                        <div class="dot active"></div>
+                        <div class="dot"></div>
+                    </div>
+
+                    <!-- 底部弧形 Dock -->
+                    <div class="htc-dock">
+                        <div class="dock-btn">📞</div>
+                        <div class="dock-btn center" id="btn-drawer">⬆️</div>
+                        <div class="dock-btn">⚙️</div>
+                    </div>
+                </div>
+
+                <!-- 各种 App 界面 -->
+                
+                <!-- 天气 (带华丽动画) -->
+                <div class="app-view" id="view-weather">
+                    <div class="app-header">天气</div>
+                    <div class="weather-app-bg">
+                        <div class="sun-ani"></div>
+                        <div class="weather-temp">22°</div>
+                        <div class="weather-city">上海市</div>
+                        <div class="weather-desc">晴 | 体感温度 23°</div>
                     </div>
                 </div>
 
@@ -172,57 +262,47 @@
                     <div class="app-list" id="msg-list">
                         <div class="list-item"><strong>老妈</strong><span>晚饭回家吃吗？</span></div>
                     </div>
-                    
-                    <!-- 输入框（纯显示） -->
-                    <div class="msg-input-area" id="msg-input-area">
+                    <div class="msg-input-area">
                         <div class="msg-display" id="msg-display"><span class="cursor"></span></div>
                     </div>
-
-                    <!-- HTC 风格虚拟键盘 -->
                     <div class="htc-keyboard" id="htc-keyboard">
-                        <div class="kb-row" id="kb-row-1">
-                            <div class="kb-key" data-key="q">q</div><div class="kb-key" data-key="w">w</div><div class="kb-key" data-key="e">e</div><div class="kb-key" data-key="r">r</div><div class="kb-key" data-key="t">t</div><div class="kb-key" data-key="y">y</div><div class="kb-key" data-key="u">u</div><div class="kb-key" data-key="i">i</div><div class="kb-key" data-key="o">o</div><div class="kb-key" data-key="p">p</div>
-                        </div>
-                        <div class="kb-row" id="kb-row-2">
-                            <div class="kb-key" data-key="a">a</div><div class="kb-key" data-key="s">s</div><div class="kb-key" data-key="d">d</div><div class="kb-key" data-key="f">f</div><div class="kb-key" data-key="g">g</div><div class="kb-key" data-key="h">h</div><div class="kb-key" data-key="j">j</div><div class="kb-key" data-key="k">k</div><div class="kb-key" data-key="l">l</div>
-                        </div>
-                        <div class="kb-row" id="kb-row-3">
-                            <div class="kb-key special" id="key-del">Del</div>
-                            <div class="kb-key" data-key="z">z</div><div class="kb-key" data-key="x">x</div><div class="kb-key" data-key="c">c</div><div class="kb-key" data-key="v">v</div><div class="kb-key" data-key="b">b</div><div class="kb-key" data-key="n">n</div><div class="kb-key" data-key="m">m</div>
-                            <div class="kb-key special" id="key-enter">Enter</div>
-                        </div>
-                        <div class="kb-row">
-                            <div class="kb-key space" data-key=" ">Space</div>
-                        </div>
+                        <div class="kb-row"><div class="kb-key" data-key="q">q</div><div class="kb-key" data-key="w">w</div><div class="kb-key" data-key="e">e</div><div class="kb-key" data-key="r">r</div><div class="kb-key" data-key="t">t</div><div class="kb-key" data-key="y">y</div><div class="kb-key" data-key="u">u</div><div class="kb-key" data-key="i">i</div><div class="kb-key" data-key="o">o</div><div class="kb-key" data-key="p">p</div></div>
+                        <div class="kb-row"><div class="kb-key" data-key="a">a</div><div class="kb-key" data-key="s">s</div><div class="kb-key" data-key="d">d</div><div class="kb-key" data-key="f">f</div><div class="kb-key" data-key="g">g</div><div class="kb-key" data-key="h">h</div><div class="kb-key" data-key="j">j</div><div class="kb-key" data-key="k">k</div><div class="kb-key" data-key="l">l</div></div>
+                        <div class="kb-row"><div class="kb-key special" id="key-del">Del</div><div class="kb-key" data-key="z">z</div><div class="kb-key" data-key="x">x</div><div class="kb-key" data-key="c">c</div><div class="kb-key" data-key="v">v</div><div class="kb-key" data-key="b">b</div><div class="kb-key" data-key="n">n</div><div class="kb-key" data-key="m">m</div><div class="kb-key special" id="key-enter">Enter</div></div>
+                        <div class="kb-row"><div class="kb-key space" data-key=" ">Space</div></div>
                     </div>
                 </div>
 
-                <!-- 邮件界面 -->
-                <div class="app-view" id="view-mail">
-                    <div class="app-header">邮件</div>
-                    <div class="app-list">
-                        <div class="list-item"><strong>GitHub</strong><span>您的项目有新的 Star！</span></div>
-                    </div>
-                </div>
-
-                <!-- 相机界面 -->
+                <!-- 相机 -->
                 <div class="app-view" id="view-camera">
                     <div class="app-header">相机</div>
-                    <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column;">
+                    <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column; background:#000;">
                         <div style="font-size:60px; margin-bottom:15px;">📸</div>
                         <div style="color:var(--htc-green); font-size:16px;">按轨迹球拍照</div>
                     </div>
                 </div>
+
+                <!-- 日历 -->
+                <div class="app-view" id="view-calendar">
+                    <div class="app-header">日历</div>
+                    <div class="app-list"><div class="list-item"><strong>11月18日</strong><span>下午 14:00 项目评审会议</span></div></div>
+                </div>
+
+                <!-- 邮件 -->
+                <div class="app-view" id="view-mail">
+                    <div class="app-header">邮件</div>
+                    <div class="app-list"><div class="list-item"><strong>GitHub</strong><span>您的项目有新的 Star！</span></div></div>
+                </div>
             </div>
         </div>
 
-        <!-- 底部导航键 -->
+        <!-- 物理键区 -->
         <div class="nav-row">
-            <div class="nav-btn btn-green" id="btn-call">接听</div>
+            <div class="nav-btn btn-green">接听</div>
             <div class="nav-btn btn-black" id="btn-home">主页</div>
-            <div class="nav-btn btn-black" id="btn-menu">菜单</div>
+            <div class="nav-btn btn-black">菜单</div>
             <div class="nav-btn btn-black" id="btn-back">返回</div>
-            <div class="nav-btn btn-red" id="btn-end">挂断</div>
+            <div class="nav-btn btn-red">挂断</div>
         </div>
 
         <!-- 轨迹球 -->
@@ -240,28 +320,68 @@
         const keyboard = document.getElementById('htc-keyboard');
         
         let appState = 'home'; 
-        
-        // 文本与光标
         let msgText = "";
         let cursorPos = 0;
-
-        // 轨迹球在键盘上的焦点
         let kbKeys = document.querySelectorAll('.kb-key');
         let kbFocusIndex = 0;
 
-        // 时钟
+        // 页面滑动状态 (0 = 时钟页, 1 = 应用页)
+        let currentPage = 0;
+        const pages = document.querySelectorAll('.page');
+        const dots = document.querySelectorAll('.dot');
+
+        // --- 翻页时钟实现 ---
+        let lastMinute = -1;
         function updateClock() {
             const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('clock-status').innerText = timeStr;
-            document.getElementById('main-clock').innerText = timeStr;
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            
+            document.getElementById('clock-status').innerText = `${h}:${m}`;
+            
+            // 只在分钟变化时更新和触发翻页动画
+            if (now.getMinutes() !== lastMinute) {
+                lastMinute = now.getMinutes();
+                const clockHtml = `
+                    <div class="flip-digit flip-anim">${h[0]}</div>
+                    <div class="flip-digit">${h[1]}</div>
+                    <div style="display:flex; align-items:center; font-size:40px; padding:0 5px; color:#555;">:</div>
+                    <div class="flip-digit flip-anim">${m[0]}</div>
+                    <div class="flip-digit">${m[1]}</div>
+                `;
+                document.getElementById('flip-clock').innerHTML = clockHtml;
+            }
+
             const days = ['日', '一', '二', '三', '四', '五', '六'];
             document.getElementById('main-date').innerText = `${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 切换桌面焦点
+        // --- 页面切换逻辑 ---
+        function goToPage(pageIndex) {
+            currentPage = pageIndex;
+            // 用 translateX 实现真实的滑屏效果
+            pages[0].style.transform = `translateX(${-currentPage * 100}%)`;
+            pages[1].style.transform = `translateX(${-currentPage * 100}%)`;
+            
+            dots.forEach((dot, i) => {
+                if (i === currentPage) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+            
+            // 如果切到了应用页，重置焦点
+            if (currentPage === 1) {
+                icons[currentIndex].classList.add('active');
+            } else {
+                icons.forEach(icon => icon.classList.remove('active'));
+            }
+        }
+
+        // 点击底部中间的箭头直接去应用页
+        document.getElementById('btn-drawer').addEventListener('pointerdown', () => goToPage(1));
+
+        // --- 内部逻辑 ---
         function updateFocus(newIndex) {
             icons[currentIndex].classList.remove('active');
             currentIndex = newIndex;
@@ -270,7 +390,6 @@
             icons[currentIndex].classList.add('active');
         }
 
-        // 切换键盘焦点
         function updateKbFocus(newIndex) {
             kbKeys[kbFocusIndex].classList.remove('focused');
             kbFocusIndex = newIndex;
@@ -279,7 +398,6 @@
             kbKeys[kbFocusIndex].classList.add('focused');
         }
 
-        // 打开 App
         function openApp(appId) {
             senseHome.style.display = 'none';
             views.forEach(v => v.classList.remove('active'));
@@ -288,39 +406,31 @@
                 targetView.classList.add('active');
                 appState = appId;
                 if (appId === 'messages') {
-                    keyboard.classList.add('active');
                     kbFocusIndex = 0;
                     kbKeys[kbFocusIndex].classList.add('focused');
                     updateDisplay();
-                } else {
-                    keyboard.classList.remove('active');
                 }
             }
         }
 
-        // 回桌面
         function goHome() {
             views.forEach(v => v.classList.remove('active'));
             senseHome.style.display = 'flex';
             appState = 'home';
-            keyboard.classList.remove('active');
             kbKeys.forEach(k => k.classList.remove('focused'));
+            kbFocusIndex = 0;
+            // 返回桌面时，默认回到翻页时钟那页
+            goToPage(0);
         }
 
-        document.getElementById('btn-back').addEventListener('click', goHome);
-        document.getElementById('btn-home').addEventListener('click', goHome);
+        document.getElementById('btn-back').addEventListener('pointerdown', goHome);
+        document.getElementById('btn-home').addEventListener('pointerdown', goHome);
 
-        // 更新屏幕显示
         function updateDisplay() {
             const display = document.getElementById('msg-display');
-            const before = msgText.slice(0, cursorPos);
-            const after = msgText.slice(cursorPos);
-            display.innerHTML = before + '<span class="cursor"></span>' + after;
-            // 自动滚到最右侧
-            display.scrollLeft = display.scrollWidth;
+            display.innerHTML = msgText.slice(0, cursorPos) + '<span class="cursor"></span>' + msgText.slice(cursorPos);
         }
 
-        // 处理按键输入
         function handleKey(key, isSpecial) {
             if (isSpecial === 'del') {
                 if (cursorPos > 0) {
@@ -335,8 +445,7 @@
                     newItem.innerHTML = `<strong>我 (刚刚)</strong><span>${msgText}</span>`;
                     list.appendChild(newItem);
                     list.scrollTop = list.scrollHeight;
-                    msgText = "";
-                    cursorPos = 0;
+                    msgText = ""; cursorPos = 0;
                 }
             } else {
                 msgText = msgText.slice(0, cursorPos) + key + msgText.slice(cursorPos);
@@ -345,12 +454,10 @@
             updateDisplay();
         }
 
-        // 直接点击虚拟键盘
         keyboard.addEventListener('pointerdown', (e) => {
             const keyEl = e.target.closest('.kb-key');
             if (!keyEl) return;
             e.preventDefault();
-            
             keyEl.classList.add('pressed');
             setTimeout(() => keyEl.classList.remove('pressed'), 100);
             
@@ -360,10 +467,8 @@
             else handleKey(key || ' ');
         });
 
-        // ====== 轨迹球微操 ======
+        // ====== 轨迹球微操 (完美适配桌面滑屏) ======
         let startX = 0, startY = 0, isSwiping = false;
-        let holdTimer = null;
-
         trackball.addEventListener('pointerdown', (e) => {
             e.preventDefault(); startX = e.clientX; startY = e.clientY; isSwiping = false;
         });
@@ -373,47 +478,47 @@
             let deltaX = e.clientX - startX;
             let deltaY = e.clientY - startY;
             
-            if (Math.abs(deltaX) > 15 || Math.abs(deltaY) > 15) {
+            // 灵敏度阈值
+            if (Math.abs(deltaX) > 12 || Math.abs(deltaY) > 12) {
                 isSwiping = true;
                 
                 if (appState === 'home') {
-                    let cols = 3;
+                    // 桌面：左右滑切换页面
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        if (deltaX > 0) updateFocus(currentIndex + 1); else updateFocus(currentIndex - 1);
-                    } else {
-                        if (deltaY > 0) updateFocus(currentIndex + cols); else updateFocus(currentIndex - cols);
+                        if (deltaX > 0 && currentPage === 0) goToPage(1);
+                        else if (deltaX < 0 && currentPage === 1) goToPage(0);
+                    } 
+                    // 桌面：上下滑移动图标焦点 (仅限应用页)
+                    else if (currentPage === 1) {
+                        let cols = 4;
+                        if (deltaY > 0) updateFocus(currentIndex + cols); 
+                        else updateFocus(currentIndex - cols);
                     }
                 } 
                 else if (appState === 'messages') {
-                    // 在键盘上滑动切换按键
-                    let cols = 10; // 第一排大约10个键
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
                         if (deltaX > 0) updateKbFocus(kbFocusIndex + 1); else updateKbFocus(kbFocusIndex - 1);
-                    } else {
-                        // 上下滑动需要动态判断行，这里简单按10个键差值跳跃
-                        // 更好的做法是根据 DOM 结构精准跳行，这里为了代码简洁用近似值
-                        if (deltaY > 0) updateKbFocus(Math.min(kbKeys.length - 1, kbFocusIndex + 8));
-                        else updateKbFocus(Math.max(0, kbFocusIndex - 8));
                     }
                 }
-                
                 startX = e.clientX; startY = e.clientY;
             }
         });
 
         trackball.addEventListener('pointerup', (e) => {
             if (!isSwiping) {
-                // 按压轨迹球
                 if (appState === 'home') {
-                    openApp(icons[currentIndex].getAttribute('onclick').match(/'([^']+)'/)[1]);
+                    // 桌面按压
+                    if (currentPage === 0) {
+                        goToPage(1); // 在时钟页按压，进入应用页
+                    } else {
+                        openApp(icons[currentIndex].getAttribute('onclick').match(/'([^']+)'/)[1]);
+                    }
                 } else if (appState === 'camera') {
                     alert('📸 咔嚓！照片已保存');
                 } else if (appState === 'messages') {
-                    // 在键盘上按压，等于敲击当前选中的字母
                     const focusedKey = kbKeys[kbFocusIndex];
                     focusedKey.classList.add('pressed');
                     setTimeout(() => focusedKey.classList.remove('pressed'), 100);
-                    
                     const key = focusedKey.getAttribute('data-key');
                     if (focusedKey.id === 'key-del') handleKey(null, 'del');
                     else if (focusedKey.id === 'key-enter') handleKey(null, 'enter');
