@@ -5,108 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HTC Hero (G3) Simulator</title>
     <style>
-        :root { --htc-green: #8CC63F; --htc-red: #E3000F; --htc-bg: #1a1a1a; }
+        :root { --htc-green: #8CC63F; --htc-red: #E3000F; }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: #000; display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; touch-action: none;
+            height: 100vh; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden;
         }
-        /* HTC Hero 标志性的翘下巴机身 */
+        /* 机身 */
         .htc-device {
-            width: 96vw; max-width: 400px; height: 85vh; max-height: 750px;
+            width: 96vw; max-width: 400px; height: 95vh; 
             background: linear-gradient(180deg, #f0f0f0 0%, #d0d0d0 30%, #a0a0a0 100%);
-            border-radius: 20px 20px 60px 60px; /* 底部圆弧加大，模拟翘下巴 */
-            padding: 15px 12px; display: flex; flex-direction: column;
+            border-radius: 20px 20px 60px 60px;
+            padding: 10px; display: flex; flex-direction: column;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.8);
             position: relative; border: 2px solid #bbb;
         }
-        .top-bezel { text-align: center; padding-bottom: 8px; }
-        .speaker { width: 60px; height: 6px; background: #333; margin: 0 auto; border-radius: 3px; box-shadow: inset 0 1px 2px #000; }
-        .htc-logo { color: #555; font-size: 10px; font-weight: bold; letter-spacing: 3px; margin-top: 5px; }
+        .top-bezel { text-align: center; padding-bottom: 5px; flex-shrink: 0; }
+        .speaker { width: 60px; height: 5px; background: #333; margin: 0 auto; border-radius: 3px; }
+        .htc-logo { color: #555; font-size: 10px; font-weight: bold; letter-spacing: 3px; margin-top: 3px; }
 
         /* 屏幕 */
         .screen-container {
-            width: 100%; aspect-ratio: 3 / 2; background: #000; border: 2px solid #222;
+            width: 100%; flex-grow: 1; background: #000; border: 2px solid #222;
             border-radius: 4px; position: relative; overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8); margin-bottom: 10px;
         }
         .status-bar {
-            background: #111; color: #aaa; font-size: 10px; padding: 3px 8px;
-            display: flex; justify-content: space-between; border-bottom: 1px solid #333; z-index: 10;
+            background: #111; color: #aaa; font-size: 11px; padding: 4px 8px;
+            display: flex; justify-content: space-between; border-bottom: 1px solid #333; z-index: 10; flex-shrink: 0;
         }
         .screen-content { flex-grow: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* HTC Sense 桌面 */
+        /* 桌面 */
         .sense-home {
-            height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 20px;
-            background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%);
+            height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 30px;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%); overflow-y: auto;
         }
-        /* 翻页时钟 */
-        .clock-widget {
-            text-align: center; margin-bottom: 20px; color: #fff;
-        }
-        .clock-time { font-size: 42px; font-weight: 300; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .clock-date { font-size: 12px; color: #aaa; margin-top: 5px; }
-        .weather-info { font-size: 11px; color: #8CC63F; margin-top: 3px; }
+        .clock-widget { text-align: center; margin-bottom: 30px; color: #fff; }
+        .clock-time { font-size: 48px; font-weight: 300; line-height: 1; }
+        .clock-date { font-size: 13px; color: #aaa; margin-top: 5px; }
+        .weather-info { font-size: 12px; color: var(--htc-green); margin-top: 5px; }
 
-        /* 应用图标网格 */
         .app-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
             padding: 0 15px; width: 100%; justify-items: center;
         }
         .app-icon {
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            padding: 5px; border-radius: 8px; border: 2px solid transparent; transition: all 0.15s;
+            padding: 8px; border-radius: 10px; border: 2px solid transparent; transition: all 0.15s;
         }
-        .app-icon.active { background: rgba(140, 198, 63, 0.2); border-color: var(--htc-green); box-shadow: 0 0 10px rgba(140, 198, 63, 0.5); transform: scale(1.05); }
+        .app-icon.active { background: rgba(140, 198, 63, 0.2); border-color: var(--htc-green); transform: scale(1.05); }
         .icon-img {
-            width: 40px; height: 40px; background: #333; border-radius: 10px; margin-bottom: 4px;
-            display: flex; justify-content: center; align-items: center; font-size: 20px; color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            width: 48px; height: 48px; background: #333; border-radius: 12px; margin-bottom: 6px;
+            display: flex; justify-content: center; align-items: center; font-size: 24px; color: white;
         }
-        .icon-text { color: #fff; font-size: 10px; text-align: center; text-shadow: 0 1px 2px #000; }
+        .icon-text { color: #fff; font-size: 11px; text-shadow: 0 1px 2px #000; }
 
-        /* 应用界面 */
-        .app-view { display: none; flex-direction: column; height: 100%; background: #111; color: #fff; }
+        /* App 界面 */
+        .app-view { display: none; flex-direction: column; height: 100%; width: 100%; background: #111; color: #fff; }
         .app-view.active { display: flex; }
-        .app-header { background: linear-gradient(180deg, #333, #111); padding: 8px; font-size: 13px; font-weight: bold; text-align: center; border-bottom: 1px solid #444; color: #8CC63F; }
+        .app-header { background: linear-gradient(180deg, #333, #111); padding: 10px; font-size: 14px; font-weight: bold; text-align: center; border-bottom: 1px solid #444; color: var(--htc-green); flex-shrink: 0; }
+        
         .app-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .list-item { padding: 10px; border-bottom: 1px solid #222; font-size: 12px; display: flex; flex-direction: column; }
-        .list-item strong { color: #8CC63F; font-size: 13px; margin-bottom: 2px; }
-        .list-item span { color: #aaa; font-size: 11px; }
-        .input-area { padding: 8px; background: #222; border-top: 1px solid #444; display: none; }
-        .input-area.active { display: block; }
-        .chat-display { background: #000; border: 1px solid #444; color: #fff; padding: 6px; font-size: 12px; min-height: 20px; border-radius: 3px; word-break: break-all; }
-        .cursor { display: inline-block; width: 2px; height: 13px; background: #8CC63F; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; }
+        .list-item { padding: 10px; border-bottom: 1px solid #222; font-size: 13px; display: flex; flex-direction: column; }
+        .list-item strong { color: var(--htc-green); font-size: 14px; margin-bottom: 4px; }
+        .list-item span { color: #aaa; font-size: 12px; }
+
+        /* 信息界面输入区 */
+        .msg-input-area {
+            padding: 8px; background: #222; border-top: 1px solid #444; flex-shrink: 0; height: 40px; display: flex; align-items: center;
+        }
+        .msg-display {
+            width: 100%; background: #000; border: 1px solid #555; color: #fff; padding: 6px 8px; font-size: 13px;
+            min-height: 24px; border-radius: 4px; white-space: nowrap; overflow-x: auto; display: flex; align-items: center;
+        }
+        .cursor { display: inline-block; width: 2px; height: 14px; background: var(--htc-green); animation: blink 1s step-end infinite; margin: 0 1px; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* 底部导航键区域 */
-        .nav-row { display: flex; justify-content: space-around; align-items: center; padding: 15px 5px; margin-top: 10px; }
+        /* ======== 核心：HTC 风格虚拟键盘 ======== */
+        .htc-keyboard {
+            background: #1a1a1a; padding: 5px; border-top: 2px solid #333; display: none; flex-direction: column; gap: 4px;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.8); flex-shrink: 0;
+        }
+        .htc-keyboard.active { display: flex; }
+        .kb-row { display: flex; justify-content: center; gap: 3px; width: 100%; }
+        .kb-key {
+            flex: 1; height: 32px; background: linear-gradient(180deg, #444, #222); border-radius: 4px;
+            display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold;
+            color: #ddd; box-shadow: 0 2px 3px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 1px solid #111; cursor: pointer; transition: all 0.1s;
+        }
+        .kb-key.special { flex: 1.5; font-size: 11px; color: #aaa; background: linear-gradient(180deg, #333, #111); }
+        .kb-key.space { flex: 5; }
+        
+        /* 键盘按键按下 */
+        .kb-key:active, .kb-key.pressed {
+            transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.8); background: #111;
+        }
+        /* 轨迹球选中的按键（HTC经典绿光） */
+        .kb-key.focused {
+            border-color: var(--htc-green); color: var(--htc-green);
+            box-shadow: 0 0 8px rgba(140, 198, 63, 0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+            background: linear-gradient(180deg, #333, #111);
+        }
+
+        /* 底部导航键 */
+        .nav-row { display: flex; justify-content: space-around; align-items: center; padding: 5px 0; flex-shrink: 0; }
         .nav-btn {
-            width: 44px; height: 24px; border-radius: 12px; display: flex; justify-content: center; align-items: center;
-            font-size: 10px; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); background: #444;
+            width: 50px; height: 26px; border-radius: 13px; display: flex; justify-content: center; align-items: center;
+            font-size: 11px; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         .btn-green { background: var(--htc-green); color: #000; }
         .btn-red { background: var(--htc-red); }
-        .btn-black { background: #222; border: 1px solid #555; }
+        .btn-black { background: #333; border: 1px solid #555; color: #ddd; }
 
-        /* 核心：红色“足球”轨迹球 */
-        .trackball-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
+        /* 轨迹球 */
+        .trackball-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; padding-bottom: 15px; flex-shrink: 0; }
         .trackball {
-            width: 46px; height: 46px; border-radius: 50%;
+            width: 50px; height: 50px; border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #ff6666, #cc0000 60%, #660000 100%);
             box-shadow: inset -3px -5px 10px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.5), 0 0 15px rgba(204,0,0,0.4);
             cursor: pointer; border: 2px solid #551111; position: relative;
         }
-        /* 模拟球体滚动的高光 */
         .trackball::after {
             content: ''; position: absolute; top: 20%; left: 20%; width: 25%; height: 25%;
             background: rgba(255,255,255,0.4); border-radius: 50%; filter: blur(1px);
         }
-        .trackball:active { transform: scale(0.95); box-shadow: inset -1px -2px 5px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.5); }
-
-        /* 键盘输入区（隐藏，仅用于捕获实体键盘） */
-        .keyboard-input { opacity: 0; position: absolute; bottom: 0; width: 100%; height: 1px; z-index: -1; }
+        .trackball:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -121,7 +146,7 @@
             <div class="status-bar">中国移动 <span id="clock-status">12:00</span></div>
             
             <div class="screen-content">
-                <!-- HTC Sense 桌面 -->
+                <!-- 桌面 -->
                 <div class="sense-home" id="sense-home">
                     <div class="clock-widget">
                         <div class="clock-time" id="main-clock">12:00</div>
@@ -138,9 +163,6 @@
                         <div class="app-icon" onclick="openApp('camera')">
                             <div class="icon-img" style="background:#607d8b;">📷</div><div class="icon-text">相机</div>
                         </div>
-                        <div class="app-icon" onclick="openApp('music')">
-                            <div class="icon-img" style="background:#9c27b0;">🎵</div><div class="icon-text">音乐</div>
-                        </div>
                     </div>
                 </div>
 
@@ -149,10 +171,29 @@
                     <div class="app-header">信息</div>
                     <div class="app-list" id="msg-list">
                         <div class="list-item"><strong>老妈</strong><span>晚饭回家吃吗？</span></div>
-                        <div class="list-item"><strong>10086</strong><span>您本月流量已使用80%。</span></div>
                     </div>
-                    <div class="input-area active" id="msg-input-area">
-                        <div class="chat-display" id="msg-input"><span class="cursor"></span></div>
+                    
+                    <!-- 输入框（纯显示） -->
+                    <div class="msg-input-area" id="msg-input-area">
+                        <div class="msg-display" id="msg-display"><span class="cursor"></span></div>
+                    </div>
+
+                    <!-- HTC 风格虚拟键盘 -->
+                    <div class="htc-keyboard" id="htc-keyboard">
+                        <div class="kb-row" id="kb-row-1">
+                            <div class="kb-key" data-key="q">q</div><div class="kb-key" data-key="w">w</div><div class="kb-key" data-key="e">e</div><div class="kb-key" data-key="r">r</div><div class="kb-key" data-key="t">t</div><div class="kb-key" data-key="y">y</div><div class="kb-key" data-key="u">u</div><div class="kb-key" data-key="i">i</div><div class="kb-key" data-key="o">o</div><div class="kb-key" data-key="p">p</div>
+                        </div>
+                        <div class="kb-row" id="kb-row-2">
+                            <div class="kb-key" data-key="a">a</div><div class="kb-key" data-key="s">s</div><div class="kb-key" data-key="d">d</div><div class="kb-key" data-key="f">f</div><div class="kb-key" data-key="g">g</div><div class="kb-key" data-key="h">h</div><div class="kb-key" data-key="j">j</div><div class="kb-key" data-key="k">k</div><div class="kb-key" data-key="l">l</div>
+                        </div>
+                        <div class="kb-row" id="kb-row-3">
+                            <div class="kb-key special" id="key-del">Del</div>
+                            <div class="kb-key" data-key="z">z</div><div class="kb-key" data-key="x">x</div><div class="kb-key" data-key="c">c</div><div class="kb-key" data-key="v">v</div><div class="kb-key" data-key="b">b</div><div class="kb-key" data-key="n">n</div><div class="kb-key" data-key="m">m</div>
+                            <div class="kb-key special" id="key-enter">Enter</div>
+                        </div>
+                        <div class="kb-row">
+                            <div class="kb-key space" data-key=" ">Space</div>
+                        </div>
                     </div>
                 </div>
 
@@ -161,27 +202,15 @@
                     <div class="app-header">邮件</div>
                     <div class="app-list">
                         <div class="list-item"><strong>GitHub</strong><span>您的项目有新的 Star！</span></div>
-                        <div class="list-item"><strong>Medium</strong><span>本周精选文章推荐</span></div>
                     </div>
                 </div>
 
-                <!-- 相机界面（用轨迹球拍照） -->
+                <!-- 相机界面 -->
                 <div class="app-view" id="view-camera">
                     <div class="app-header">相机</div>
                     <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column;">
-                        <div style="font-size:48px; margin-bottom:10px;">📸</div>
-                        <div style="color:#8CC63F; font-size:14px;">按轨迹球拍照</div>
-                        <div style="color:#666; font-size:11px; margin-top:5px;">(点击中间的红色圆球)</div>
-                    </div>
-                </div>
-
-                <!-- 音乐界面 -->
-                <div class="app-view" id="view-music">
-                    <div class="app-header">音乐</div>
-                    <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column;">
-                        <div style="font-size:48px; margin-bottom:10px;">🎵</div>
-                        <div style="color:#8CC63F; font-size:14px;">正在播放: 经典铃声</div>
-                        <div style="color:#666; font-size:11px; margin-top:5px;">滚动轨迹球切歌</div>
+                        <div style="font-size:60px; margin-bottom:15px;">📸</div>
+                        <div style="color:var(--htc-green); font-size:16px;">按轨迹球拍照</div>
                     </div>
                 </div>
             </div>
@@ -196,13 +225,10 @@
             <div class="nav-btn btn-red" id="btn-end">挂断</div>
         </div>
 
-        <!-- 核心：红色轨迹球 -->
+        <!-- 轨迹球 -->
         <div class="trackball-container">
             <div class="trackball" id="trackball"></div>
         </div>
-        
-        <!-- 隐藏输入框捕获键盘 -->
-        <input type="text" class="keyboard-input" id="keyboard-input" autocomplete="off" autocorrect="off" autocapitalize="off">
     </div>
 
     <script>
@@ -211,35 +237,46 @@
         const senseHome = document.getElementById('sense-home');
         const views = document.querySelectorAll('.app-view');
         const trackball = document.getElementById('trackball');
-        const hiddenInput = document.getElementById('keyboard-input');
+        const keyboard = document.getElementById('htc-keyboard');
         
         let appState = 'home'; 
+        
+        // 文本与光标
         let msgText = "";
-        let msgCursor = 0;
+        let cursorPos = 0;
 
-        // 更新时钟
+        // 轨迹球在键盘上的焦点
+        let kbKeys = document.querySelectorAll('.kb-key');
+        let kbFocusIndex = 0;
+
+        // 时钟
         function updateClock() {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
             document.getElementById('clock-status').innerText = timeStr;
             document.getElementById('main-clock').innerText = timeStr;
-            
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
             const days = ['日', '一', '二', '三', '四', '五', '六'];
-            const day = days[now.getDay()];
-            document.getElementById('main-date').innerText = `${month}月${date}日 星期${day}`;
+            document.getElementById('main-date').innerText = `${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 更新焦点
+        // 切换桌面焦点
         function updateFocus(newIndex) {
             icons[currentIndex].classList.remove('active');
             currentIndex = newIndex;
             if (currentIndex < 0) currentIndex = icons.length - 1;
             if (currentIndex >= icons.length) currentIndex = 0;
             icons[currentIndex].classList.add('active');
+        }
+
+        // 切换键盘焦点
+        function updateKbFocus(newIndex) {
+            kbKeys[kbFocusIndex].classList.remove('focused');
+            kbFocusIndex = newIndex;
+            if (kbFocusIndex < 0) kbFocusIndex = kbKeys.length - 1;
+            if (kbFocusIndex >= kbKeys.length) kbFocusIndex = 0;
+            kbKeys[kbFocusIndex].classList.add('focused');
         }
 
         // 打开 App
@@ -250,40 +287,85 @@
             if (targetView) {
                 targetView.classList.add('active');
                 appState = appId;
-                // 如果是信息界面，自动聚焦隐藏输入框
                 if (appId === 'messages') {
-                    hiddenInput.focus();
-                    updateChatDisplay();
+                    keyboard.classList.add('active');
+                    kbFocusIndex = 0;
+                    kbKeys[kbFocusIndex].classList.add('focused');
+                    updateDisplay();
+                } else {
+                    keyboard.classList.remove('active');
                 }
             }
         }
 
-        // 返回桌面
+        // 回桌面
         function goHome() {
             views.forEach(v => v.classList.remove('active'));
             senseHome.style.display = 'flex';
             appState = 'home';
-            hiddenInput.blur();
+            keyboard.classList.remove('active');
+            kbKeys.forEach(k => k.classList.remove('focused'));
         }
 
-        // 绑定返回和主页按钮
-        document.getElementById('btn-back').addEventListener('pointerdown', goHome);
-        document.getElementById('btn-home').addEventListener('pointerdown', goHome);
+        document.getElementById('btn-back').addEventListener('click', goHome);
+        document.getElementById('btn-home').addEventListener('click', goHome);
 
-        // 输入框渲染
-        function updateChatDisplay() {
-            const displayEl = document.getElementById('msg-input');
-            const before = msgText.slice(0, msgCursor);
-            const after = msgText.slice(msgCursor);
-            displayEl.innerHTML = before + '<span class="cursor"></span>' + after;
+        // 更新屏幕显示
+        function updateDisplay() {
+            const display = document.getElementById('msg-display');
+            const before = msgText.slice(0, cursorPos);
+            const after = msgText.slice(cursorPos);
+            display.innerHTML = before + '<span class="cursor"></span>' + after;
+            // 自动滚到最右侧
+            display.scrollLeft = display.scrollWidth;
         }
 
-        // 核心：轨迹球滑动与点击
+        // 处理按键输入
+        function handleKey(key, isSpecial) {
+            if (isSpecial === 'del') {
+                if (cursorPos > 0) {
+                    msgText = msgText.slice(0, cursorPos - 1) + msgText.slice(cursorPos);
+                    cursorPos--;
+                }
+            } else if (isSpecial === 'enter') {
+                if (msgText.trim() !== '') {
+                    const list = document.getElementById('msg-list');
+                    const newItem = document.createElement('div');
+                    newItem.className = 'list-item';
+                    newItem.innerHTML = `<strong>我 (刚刚)</strong><span>${msgText}</span>`;
+                    list.appendChild(newItem);
+                    list.scrollTop = list.scrollHeight;
+                    msgText = "";
+                    cursorPos = 0;
+                }
+            } else {
+                msgText = msgText.slice(0, cursorPos) + key + msgText.slice(cursorPos);
+                cursorPos++;
+            }
+            updateDisplay();
+        }
+
+        // 直接点击虚拟键盘
+        keyboard.addEventListener('pointerdown', (e) => {
+            const keyEl = e.target.closest('.kb-key');
+            if (!keyEl) return;
+            e.preventDefault();
+            
+            keyEl.classList.add('pressed');
+            setTimeout(() => keyEl.classList.remove('pressed'), 100);
+            
+            const key = keyEl.getAttribute('data-key');
+            if (keyEl.id === 'key-del') handleKey(null, 'del');
+            else if (keyEl.id === 'key-enter') handleKey(null, 'enter');
+            else handleKey(key || ' ');
+        });
+
+        // ====== 轨迹球微操 ======
         let startX = 0, startY = 0, isSwiping = false;
+        let holdTimer = null;
 
         trackball.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            startX = e.clientX; startY = e.clientY; isSwiping = false;
+            e.preventDefault(); startX = e.clientX; startY = e.clientY; isSwiping = false;
         });
 
         trackball.addEventListener('pointermove', (e) => {
@@ -291,31 +373,27 @@
             let deltaX = e.clientX - startX;
             let deltaY = e.clientY - startY;
             
-            // 灵敏度阈值
-            if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+            if (Math.abs(deltaX) > 15 || Math.abs(deltaY) > 15) {
                 isSwiping = true;
                 
-                // 在桌面：滑动切换图标
                 if (appState === 'home') {
-                    let cols = 4;
+                    let cols = 3;
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
                         if (deltaX > 0) updateFocus(currentIndex + 1); else updateFocus(currentIndex - 1);
                     } else {
                         if (deltaY > 0) updateFocus(currentIndex + cols); else updateFocus(currentIndex - cols);
                     }
                 } 
-                // 在信息界面：左右滑动移动光标
                 else if (appState === 'messages') {
+                    // 在键盘上滑动切换按键
+                    let cols = 10; // 第一排大约10个键
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        if (deltaX > 0) { msgCursor = Math.min(msgText.length, msgCursor + 1); updateChatDisplay(); }
-                        else { msgCursor = Math.max(0, msgCursor - 1); updateChatDisplay(); }
-                    }
-                }
-                // 在音乐界面：滑动切歌（模拟）
-                else if (appState === 'music') {
-                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        const musicView = document.getElementById('view-music');
-                        musicView.innerHTML = `<div class="app-header">音乐</div><div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column;"><div style="font-size:48px; margin-bottom:10px;">🎵</div><div style="color:#8CC63F; font-size:14px;">${deltaX > 0 ? '下一首' : '上一首'}</div></div>`;
+                        if (deltaX > 0) updateKbFocus(kbFocusIndex + 1); else updateKbFocus(kbFocusIndex - 1);
+                    } else {
+                        // 上下滑动需要动态判断行，这里简单按10个键差值跳跃
+                        // 更好的做法是根据 DOM 结构精准跳行，这里为了代码简洁用近似值
+                        if (deltaY > 0) updateKbFocus(Math.min(kbKeys.length - 1, kbFocusIndex + 8));
+                        else updateKbFocus(Math.max(0, kbFocusIndex - 8));
                     }
                 }
                 
@@ -325,52 +403,24 @@
 
         trackball.addEventListener('pointerup', (e) => {
             if (!isSwiping) {
-                // 纯点击（按压）轨迹球
+                // 按压轨迹球
                 if (appState === 'home') {
                     openApp(icons[currentIndex].getAttribute('onclick').match(/'([^']+)'/)[1]);
                 } else if (appState === 'camera') {
-                    alert('📸 咔嚓！照片已保存 (HTC Hero 经典快门声)');
+                    alert('📸 咔嚓！照片已保存');
+                } else if (appState === 'messages') {
+                    // 在键盘上按压，等于敲击当前选中的字母
+                    const focusedKey = kbKeys[kbFocusIndex];
+                    focusedKey.classList.add('pressed');
+                    setTimeout(() => focusedKey.classList.remove('pressed'), 100);
+                    
+                    const key = focusedKey.getAttribute('data-key');
+                    if (focusedKey.id === 'key-del') handleKey(null, 'del');
+                    else if (focusedKey.id === 'key-enter') handleKey(null, 'enter');
+                    else handleKey(key || ' ');
                 }
             }
             startX = 0; startY = 0;
-        });
-
-        // 处理实体键盘输入（用于信息界面）
-        hiddenInput.addEventListener('input', (e) => {
-            if (appState !== 'messages') return;
-            // 简单处理：将新输入的字符插入到光标位置
-            const val = hiddenInput.value;
-            if (val) {
-                msgText = msgText.slice(0, msgCursor) + val + msgText.slice(msgCursor);
-                msgCursor += val.length;
-                hiddenInput.value = ''; // 清空以捕获下一次
-                updateChatDisplay();
-            }
-        });
-
-        // 处理退格键
-        hiddenInput.addEventListener('keydown', (e) => {
-            if (appState !== 'messages') return;
-            if (e.key === 'Backspace') {
-                e.preventDefault();
-                if (msgCursor > 0) {
-                    msgText = msgText.slice(0, msgCursor - 1) + msgText.slice(msgCursor);
-                    msgCursor--;
-                    updateChatDisplay();
-                }
-            } else if (e.key === 'Enter') {
-                // 发送消息
-                if (msgText.trim() !== '') {
-                    const list = document.getElementById('msg-list');
-                    const newItem = document.createElement('div');
-                    newItem.className = 'list-item';
-                    newItem.innerHTML = `<strong>我 (刚刚)</strong><span>${msgText}</span>`;
-                    list.appendChild(newItem);
-                    list.scrollTop = list.scrollHeight;
-                    msgText = ""; msgCursor = 0;
-                    updateChatDisplay();
-                }
-            }
         });
     </script>
 </body>
